@@ -1,0 +1,40 @@
+# tests.config - which firmware tests to build.
+#
+# Copy this file to tests.config (ignored by git) and set the tests you want
+# to 1.  GNU Make reads it when the main Makefile is run with
+# TIKU_TESTS_ENABLE=1.  Anything left at 0 is not compiled.
+#
+# A value on the command line wins over this file:
+#     make TIKU_TESTS_ENABLE=1 TEST_npu_mem=1
+# `make test-list` shows every test and its rules; `make test-config` shows
+# the resolved selection.  Misspelt names are an error.
+
+# --- STM32N6 DK images (BOARD=stm32n6570_dk; enable at most one) -----------
+TEST_dk_tft_single        = 0
+TEST_dk_tft_colorcycle    = 0
+TEST_dk_dcmipp_csi192     = 0
+TEST_dk_imx335_stream     = 0
+TEST_dk_dcmipp_capture    = 0
+TEST_dk_dcmipp_pipe2_640  = 0
+TEST_dk_dcmipp_dual       = 0
+
+# --- NPU acceptance tests (these force TIKU_NPU_ENABLE=1) -------------------
+TEST_npu_mem              = 0
+TEST_npu_mem_negative     = 0   # needs npu_mem
+TEST_npu_embedded         = 0
+TEST_npu_run              = 0   # needs npu_embedded
+TEST_npu_vfs              = 0
+TEST_npu_preflight        = 0
+TEST_npu_pool             = 0
+TEST_npu_resource         = 0
+TEST_npu_lifecycle        = 0
+
+# --- Other ------------------------------------------------------------------
+TEST_region               = 0
+
+# --- Per-test parameters (passed as -D only when set) -----------------------
+# PIPE2_TEST_VARIANT      = 0      # dk_dcmipp_pipe2_640: 0, 1 or 2
+# DUAL_P1_FORMAT          = 565    # dk_dcmipp_dual: 565 or 888
+# DUAL_CYCLES             =
+# DUAL_MAD_LIMIT          =
+# TFT_COLOR_ROTATION_SECONDS =     # dk_tft_colorcycle
