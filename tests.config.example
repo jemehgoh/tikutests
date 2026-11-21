@@ -4,12 +4,16 @@
 # to 1.  GNU Make reads it when the main Makefile is run with
 # TIKU_TESTS_ENABLE=1.  Anything left at 0 is not compiled.
 #
+# Enable one test per image, plus the tests it requires or runs with (see
+# `make test-list`).  Two unrelated tests are an error: every test autostarts
+# its own process.
+#
 # A value on the command line wins over this file:
 #     make TIKU_TESTS_ENABLE=1 TEST_npu_mem=1
 # `make test-list` shows every test and its rules; `make test-config` shows
 # the resolved selection.  Misspelt names are an error.
 
-# --- STM32N6 DK images (BOARD=stm32n6570_dk; enable at most one) -----------
+# --- STM32N6 DK images (BOARD=stm32n6570_dk) -----------
 TEST_dk_tft_single        = 0
 TEST_dk_tft_colorcycle    = 0
 TEST_dk_dcmipp_csi192     = 0

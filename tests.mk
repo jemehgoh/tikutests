@@ -20,12 +20,18 @@
 #   2. TIKU_TESTS="a b"  turns those tests on      (make TIKU_TESTS="npu_mem")
 #   3. command line      make TEST_<name>=1
 #
+# One image, one test: every firmware test autostarts its own process, so the
+# enabled tests must form a single connected group, where two tests are
+# connected when one lists the other in .requires or .with.  Enabling two
+# unrelated tests is an error.  There is no override.
+#
 # Adding a test: add its name to TESTS_ALL and give it a T.<name>.* block.
 #   .srcs      source files
 #   .macro     defined as -D<macro>=1
 #   .board     BOARD it requires
 #   .group     at most one enabled test per group
 #   .requires  tests that must also be enabled
+#   .with      tests that may run together with this one without requiring it
 #   .excludes  tests that cannot be enabled with this one
 #   .needs     build option it forces on (NPU)
 #   .vars      parameters passed as -D<var>=$(<var>) when the variable is set
@@ -98,6 +104,7 @@ T.npu_mem_negative.requires := npu_mem
 
 T.npu_embedded.srcs  := $(TESTS_DIR)/tiku_npu_embedded_acceptance.c
 T.npu_embedded.macro := TIKU_NPU_EMBEDDED_TEST_ENABLE
+T.npu_embedded.with  := npu_resource npu_vfs
 T.npu_embedded.note  := with npu_resource on, runs the resource checks itself; not autostarted when npu_vfs is on
 
 T.npu_run.macro    := TIKU_NPU_RUN_TEST_ENABLE
@@ -177,14 +184,19 @@ ifneq ($(filter dk_image,$(TESTS_GROUPS)),)
 TIKU_TESTS_DK_IMAGE := 1
 endif
 
-# Standalone NPU tests each autostart a process and share one NPU and one model
-# store.  Running several at once is allowed, but warn.
-_TESTS_NPU_AUTO := \
-    $(filter npu_mem npu_lifecycle npu_pool npu_preflight npu_vfs,$(TESTS_SELECTED)) \
-    $(if $(filter npu_vfs,$(TESTS_SELECTED)),,$(filter npu_embedded,$(TESTS_SELECTED))) \
-    $(if $(filter npu_embedded,$(TESTS_SELECTED)),,$(filter npu_resource,$(TESTS_SELECTED)))
-ifneq ($(word 2,$(_TESTS_NPU_AUTO)),)
-$(warning NPU tests autostart together ($(strip $(_TESTS_NPU_AUTO))); they share the NPU and the model store)
+# One image, one test.  The selected tests must be connected through .requires
+# and .with (in either direction).  _tests_nbrs lists a test's neighbours,
+# _tests_expand grows a set by one step along selected neighbours, and four
+# doublings reach every test in a registry of up to 16 steps.
+_tests_nbrs = $(sort $(T.$(1).requires) $(T.$(1).with)     $(foreach u,$(TESTS_ALL),$(if $(filter $(1),$(T.$(u).requires) $(T.$(u).with)),$(u))))
+_tests_expand = $(sort $(1) $(foreach t,$(1),$(filter $(TESTS_SELECTED),$(call _tests_nbrs,$(t)))))
+_tests_reach  = $(call _tests_expand,$(call _tests_expand,$(1)))
+_tests_reach4 = $(call _tests_reach,$(call _tests_reach,$(1)))
+_TESTS_FIRST  := $(firstword $(TESTS_SELECTED))
+_TESTS_GROUP1 := $(call _tests_reach4,$(_TESTS_FIRST))
+_TESTS_OTHERS := $(filter-out $(_TESTS_GROUP1),$(TESTS_SELECTED))
+ifneq ($(_TESTS_OTHERS),)
+$(error tests cannot be enabled together: '$(strip $(_TESTS_GROUP1))' and '$(strip $(_TESTS_OTHERS))' are unrelated, and every test autostarts its own process. Enable one test, with the tests it requires or runs with)
 endif
 
 # ---------------------------------------------------------------------------
@@ -201,7 +213,7 @@ TEST_CFLAGS := $(foreach t,$(TESTS_SELECTED),\
 .PHONY: test-list test-config
 
 test-list:
-	$(foreach t,$(TESTS_ALL),$(info [$(if $(filter $(t),$(TESTS_SELECTED)),x, )] $(t)$(if $(T.$(t).group), group=$(T.$(t).group))$(if $(T.$(t).board), board=$(T.$(t).board))$(if $(T.$(t).requires), requires=$(T.$(t).requires))$(if $(T.$(t).note), -- $(T.$(t).note))))@:
+	$(foreach t,$(TESTS_ALL),$(info [$(if $(filter $(t),$(TESTS_SELECTED)),x, )] $(t)$(if $(T.$(t).group), group=$(T.$(t).group))$(if $(T.$(t).board), board=$(T.$(t).board))$(if $(T.$(t).requires), requires=$(T.$(t).requires))$(if $(T.$(t).with), with=$(T.$(t).with))$(if $(T.$(t).note), -- $(T.$(t).note))))@:
 
 test-config:
 	$(info tests    : $(if $(TESTS_SELECTED),$(TESTS_SELECTED),(none)))
