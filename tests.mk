@@ -12,8 +12,9 @@
 #   TEST_SRCS            their sources (may repeat; the Makefile applies $(sort))
 #   TEST_CFLAGS          their -D flags
 #   TIKU_NPU_ENABLE      forced to 1 when a selected test needs the NPU
-#   TIKU_TESTS_DK_IMAGE  1 when a DK image test is selected (apps/apps.mk and
-#                        the edge-detect check use it)
+#   TIKU_TESTS_DK_IMAGE  1 when a DK image test is selected (the edge-detect
+#                        check uses it)
+#   <macro>              each selected test's macro, set to 1 as a make variable
 #
 # Selecting tests (lowest to highest priority)
 #   1. tests.config      TEST_<name> = 1           (copy tests.config.example)
@@ -206,6 +207,11 @@ TEST_SRCS := $(foreach t,$(TESTS_SELECTED),$(T.$(t).srcs))
 TEST_CFLAGS := $(foreach t,$(TESTS_SELECTED),\
     $(if $(T.$(t).macro),-D$(T.$(t).macro)=1) \
     $(foreach v,$(T.$(t).vars),$(if $($(v)),-D$(v)=$($(v)))))
+
+# Each selected test's macro is also set as a make variable (e.g.
+# TIKU_STM32N6_DK_TFT_TEST_ENABLE := 1), so makefiles that test those names,
+# such as apps/apps.mk, keep working.
+$(foreach t,$(TESTS_SELECTED),$(if $(T.$(t).macro),$(eval $(T.$(t).macro) := 1)))
 
 # ---------------------------------------------------------------------------
 # Helper targets
