@@ -6,7 +6,7 @@
 
 #include <interfaces/bus/tiku_i2c_bus.h>
 
-#include "../applications/tiku_stm32n6570_imx335.h"
+#include "../drivers/stm32n6/imx335/tiku_stm32n6570_imx335.h"
 
 typedef struct {
     uint16_t reg;

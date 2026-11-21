@@ -31,7 +31,7 @@
 #include <kernel/process/tiku_process.h>
 #include <kernel/timers/tiku_timer.h>
 
-#include <applications/tiku_stm32n6570_imx335.h>
+#include <drivers/stm32n6/imx335/tiku_stm32n6570_imx335.h>
 
 #include <arch/stm32n6/tiku_cache_arch.h>
 #include <arch/stm32n6/tiku_cpu_common.h>
