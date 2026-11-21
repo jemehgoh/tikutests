@@ -41,6 +41,8 @@
 #include <arch/stm32n6/tiku_i2c_arch.h>
 #include <arch/stm32n6/tiku_stm32n6_regs.h>
 
+#include "tiku_test_config.h"
+
 #if defined(TIKU_STM32N6_DK_DCMIPP_PIPE2_640_TEST_ENABLE) && \
     TIKU_STM32N6_DK_DCMIPP_PIPE2_640_TEST_ENABLE
 
@@ -50,6 +52,9 @@
 
 #ifndef PIPE2_TEST_VARIANT
 #define PIPE2_TEST_VARIANT  0
+#endif
+#if PIPE2_TEST_VARIANT < 0 || PIPE2_TEST_VARIANT > 2
+#error "PIPE2_TEST_VARIANT must be 0, 1 or 2"
 #endif
 
 /* IMX335 profile is 2592x1944. The centre 1944x1944 square downsized to 640 is

@@ -9,6 +9,8 @@
 extern uint8_t __npu_reserved_start;
 extern uint8_t __npu_reserved_end;
 
+#include "tiku_test_config.h"
+
 #if (TIKU_HAS_NPU + 0) && TIKU_NPU_MEM_TEST_ENABLE
 
 TIKU_PROCESS(npu_mem_acceptance, "NPU memory acceptance");

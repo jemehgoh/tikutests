@@ -11,6 +11,8 @@
 #include <arch/stm32n6/tiku_npu_mem.h>
 #include <drivers/stm32n6/npu/models/stm32n6_network_model.h>
 
+#include "tiku_test_config.h"
+
 #if (TIKU_HAS_NPU + 0) && TIKU_NPU_LIFECYCLE_TEST_ENABLE
 
 TIKU_PROCESS(npu_lifecycle_test, "NPU lifecycle test");

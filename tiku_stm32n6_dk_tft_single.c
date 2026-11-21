@@ -10,6 +10,8 @@
 #include <arch/stm32n6/tiku_gpio_arch.h>
 #include <arch/stm32n6/tiku_ltdc_arch.h>
 
+#include "tiku_test_config.h"
+
 #if defined(TIKU_STM32N6_DK_TFT_TEST_ENABLE) && \
     TIKU_STM32N6_DK_TFT_TEST_ENABLE
 

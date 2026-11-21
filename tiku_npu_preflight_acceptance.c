@@ -7,6 +7,8 @@
 #include <arch/stm32n6/tiku_npu_llaton.h>
 #include "npu/fixtures/stm32n6_identity_corrupt.network_rel.h"
 
+#include "tiku_test_config.h"
+
 #if (TIKU_HAS_NPU + 0) && TIKU_NPU_PREFLIGHT_TEST_ENABLE
 
 #define IMAGE_WORD(_n) ((size_t)(_n) * 4u)

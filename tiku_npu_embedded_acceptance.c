@@ -10,6 +10,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "tiku_test_config.h"
+
 #if (TIKU_HAS_NPU + 0) && TIKU_NPU_EMBEDDED_TEST_ENABLE
 #include <interfaces/npu/tiku_npu.h>
 #include <kernel/process/tiku_process.h>

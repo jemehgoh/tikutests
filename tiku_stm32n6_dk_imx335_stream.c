@@ -26,6 +26,8 @@
 #include <arch/stm32n6/tiku_i2c_arch.h>
 #include <arch/stm32n6/tiku_stm32n6_regs.h>
 
+#include "tiku_test_config.h"
+
 #if defined(TIKU_STM32N6_DK_IMX335_TEST_ENABLE) && \
     TIKU_STM32N6_DK_IMX335_TEST_ENABLE
 

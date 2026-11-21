@@ -4,6 +4,8 @@
 
 #include "ll_aton_reloc_network.h"
 
+#include "tiku_test_config.h"
+
 #if (TIKU_HAS_NPU + 0) && TIKU_NPU_VFS_TEST_ENABLE
 #include <interfaces/npu/tiku_npu.h>
 #include <kernel/memory/tiku_nvm_mirror.h>

@@ -9,6 +9,8 @@
 #include <arch/stm32n6/tiku_npu_arch.h>
 #include <arch/stm32n6/tiku_npu_mem.h>
 
+#include "tiku_test_config.h"
+
 #if (TIKU_HAS_NPU + 0) && TIKU_NPU_RESOURCE_TEST_ENABLE
 
 TIKU_PROCESS(npu_resource_test, "NPU resource test");

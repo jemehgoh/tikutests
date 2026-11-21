@@ -4,6 +4,8 @@
 #include <kernel/memory/tiku_mem.h>
 #include <kernel/process/tiku_process.h>
 
+#include "tiku_test_config.h"
+
 #if defined(TIKU_STM32N6_REGION_TEST_ENABLE) && \
     TIKU_STM32N6_REGION_TEST_ENABLE
 
