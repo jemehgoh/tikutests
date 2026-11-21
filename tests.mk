@@ -213,6 +213,13 @@ TEST_CFLAGS := $(foreach t,$(TESTS_SELECTED),\
 # such as apps/apps.mk, keep working.
 $(foreach t,$(TESTS_SELECTED),$(if $(T.$(t).macro),$(eval $(T.$(t).macro) := 1)))
 
+# The DK camera preview app (apps/apps.mk) autostarts a process too.  apps.mk
+# skips it for the dk_* tests, but not for region or the NPU tests, and two
+# autostart tables fail at link time, so any selected test turns it off.
+ifneq ($(TESTS_SELECTED),)
+TIKU_STM32N6_DK_CAMERA_PREVIEW_DISABLE := 1
+endif
+
 # ---------------------------------------------------------------------------
 # Helper targets
 # ---------------------------------------------------------------------------
