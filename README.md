@@ -60,6 +60,20 @@ The same rules are checked a second time by the C preprocessor in
 `tiku_test_config.h`, which every firmware test includes, so a build that
 bypasses `tests.mk` (for example `EXTRA_CFLAGS=-D...`) is caught too.
 
+## Tests, apps and other images
+
+An image holds one owner of the autostart processes. With `TIKU_TESTS_ENABLE=1`:
+
+- `apps/apps.mk` is not included, so no app is built.
+- These stop the build with a message naming the flag: `HAS_TESTS=1` (the
+  TikuBench tests), `APP=<name>`, `DEMO=<name>`, and
+  `TIKU_STM32N6_DK_EDGE_DETECT_ENABLE=1`.
+- Enabling tests but selecting none is an error (`make test-list` and
+  `make test-config` still work).
+
+The checks read values given on the make line or in the environment. A makefile
+included later that sets `HAS_TESTS` is not seen.
+
 ## Parameters
 
 Set in `tests.config` or on the make line. A parameter reaches the compiler as

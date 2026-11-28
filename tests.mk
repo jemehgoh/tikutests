@@ -12,9 +12,12 @@
 #   TEST_SRCS            their sources (may repeat; the Makefile applies $(sort))
 #   TEST_CFLAGS          their -D flags
 #   TIKU_NPU_ENABLE      forced to 1 when a selected test needs the NPU
-#   TIKU_TESTS_DK_IMAGE  1 when a DK image test is selected (the edge-detect
-#                        check uses it)
-#   <macro>              each selected test's macro, set to 1 as a make variable
+#
+# Tests and apps never share an image.  With TIKU_TESTS_ENABLE=1 the main
+# Makefile does not include apps/apps.mk, and this file stops the build for
+# anything else that owns the image's autostart processes: HAS_TESTS=1
+# (TikuBench), APP=, DEMO= and the edge detection app.  Selecting no test is
+# an error too.
 #
 # Selecting tests (lowest to highest priority)
 #   1. tests.config      TEST_<name> = 1           (copy tests.config.example)
@@ -152,6 +155,32 @@ $(foreach v,$(filter TEST_%,$(.VARIABLES)),\
 TESTS_SELECTED := $(strip $(foreach t,$(TESTS_ALL),$(if $(filter 1,$(TEST_$(t))),$(t))))
 
 # ---------------------------------------------------------------------------
+# Exclusion: tests own the image's autostart processes, so nothing else may.
+# Checked only for a test build; the helper goals include this file with the
+# flag off.  These read command-line and environment values, which exist this
+# early; a makefile included later that sets one of them is not seen.
+# ---------------------------------------------------------------------------
+ifeq ($(TIKU_TESTS_ENABLE),1)
+ifeq ($(HAS_TESTS),1)
+$(error TIKU_TESTS_ENABLE=1 cannot be combined with HAS_TESTS=1: TikuBench's tests and these tests each own the image's autostart processes. Use one or the other)
+endif
+ifneq ($(strip $(APP)),)
+$(error TIKU_TESTS_ENABLE=1 cannot be combined with APP=$(APP): an app and a test each own the image's autostart processes)
+endif
+ifneq ($(strip $(DEMO)),)
+$(error TIKU_TESTS_ENABLE=1 cannot be combined with DEMO=$(DEMO): a demo and a test each own the image's autostart processes)
+endif
+ifeq ($(TIKU_STM32N6_DK_EDGE_DETECT_ENABLE),1)
+$(error TIKU_TESTS_ENABLE=1 cannot be combined with TIKU_STM32N6_DK_EDGE_DETECT_ENABLE=1: the edge detection app and a test each own the image's autostart processes)
+endif
+ifeq ($(TESTS_SELECTED),)
+ifeq ($(filter test-list test-config,$(MAKECMDGOALS)),)
+$(error TIKU_TESTS_ENABLE=1 but no test is selected. Set TEST_<name>=1 in tests/tests.config or on the make line; run `make test-list`)
+endif
+endif
+endif
+
+# ---------------------------------------------------------------------------
 # Validation (each failure names the tests involved)
 # ---------------------------------------------------------------------------
 _tests_in_group = $(foreach t,$(TESTS_SELECTED),$(if $(filter $(1),$(T.$(t).group)),$(t)))
@@ -181,10 +210,6 @@ $(error NPU tests are enabled but TIKU_NPU_ENABLE=$(TIKU_NPU_ENABLE))
 endif
 endif
 
-ifneq ($(filter dk_image,$(TESTS_GROUPS)),)
-TIKU_TESTS_DK_IMAGE := 1
-endif
-
 # One image, one test.  The selected tests must be connected through .requires
 # and .with (in either direction).  _tests_nbrs lists a test's neighbours,
 # _tests_expand grows a set by one step along selected neighbours, and four
@@ -208,18 +233,6 @@ TEST_CFLAGS := $(foreach t,$(TESTS_SELECTED),\
     $(if $(T.$(t).macro),-D$(T.$(t).macro)=1) \
     $(foreach v,$(T.$(t).vars),$(if $($(v)),-D$(v)=$($(v)))))
 
-# Each selected test's macro is also set as a make variable (e.g.
-# TIKU_STM32N6_DK_TFT_TEST_ENABLE := 1), so makefiles that test those names,
-# such as apps/apps.mk, keep working.
-$(foreach t,$(TESTS_SELECTED),$(if $(T.$(t).macro),$(eval $(T.$(t).macro) := 1)))
-
-# The DK camera preview app (apps/apps.mk) autostarts a process too.  apps.mk
-# skips it for the dk_* tests, but not for region or the NPU tests, and two
-# autostart tables fail at link time, so any selected test turns it off.
-ifneq ($(TESTS_SELECTED),)
-TIKU_STM32N6_DK_CAMERA_PREVIEW_DISABLE := 1
-endif
-
 # ---------------------------------------------------------------------------
 # Helper targets
 # ---------------------------------------------------------------------------
@@ -233,7 +246,6 @@ test-config:
 	$(info sources  : $(sort $(TEST_SRCS)))
 	$(info cflags   : $(TEST_CFLAGS))
 	$(info NPU      : $(if $(filter NPU,$(_TESTS_NEEDS)),forced on,not required))
-	$(info DK image : $(if $(TIKU_TESTS_DK_IMAGE),yes,no))
 	@:
 
 .DEFAULT_GOAL := $(_TESTS_SAVED_GOAL)
